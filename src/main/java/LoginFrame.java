@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 
 import login.*;
+import editor.*;
 
 public class LoginFrame extends JFrame {
     JLabel userL = new JLabel("Username");
@@ -36,7 +37,10 @@ public class LoginFrame extends JFrame {
                  String username = userT.getText();
                  String password = passwordT.getPassword().toString();
                  User l = new User(username, password);
-                 l.loginUser();
+                 if(l.loginUser()) {
+                     dispose();
+                     Editor e = new Editor();
+                 }
              }
          });
         registerB.setSize(30, 10);

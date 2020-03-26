@@ -8,8 +8,8 @@ public class User {
         this.password = password;
     }
 
-    public void loginUser () {
-
+    public boolean loginUser () {
+        return true;
     }
 
 }
