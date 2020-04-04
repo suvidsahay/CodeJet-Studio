@@ -5,24 +5,25 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.BorderLayout;
 import java.awt.event.*;
+import java.awt.Container;
 import java.io.*;
 
 public class Editor extends JFrame implements ActionListener {
 
     private JTextArea textArea = new JTextArea();
+    private ProjectStructure project = new ProjectStructure();
 
-    public Editor() {
-        JPanel directoryStructure = new JPanel();
+    public Editor() {        
 
-        JPanel contentPane = new JPanel();
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        contentPane.setLayout(new BorderLayout(0, 0));
-        setContentPane(contentPane);
+        setLayout(new BorderLayout());
+        Container c = getContentPane();
+
 
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        contentPane.add(scrollPane, BorderLayout.CENTER);
+        c.add(scrollPane,BorderLayout.CENTER);
+        c.add(project,BorderLayout.WEST);
 
         JMenuBar menuBar= new JMenuBar();
         setJMenuBar(menuBar);
@@ -31,21 +32,21 @@ public class Editor extends JFrame implements ActionListener {
         menuBar.add(file);
 
         JMenuItem newFile = new JMenuItem("New");
-        JMenuItem openFile = new JMenuItem("Open");
+        JMenuItem openFile = new JMenuItem("Open File");
+        JMenuItem openDirectory = new JMenuItem("Open Directory");
         JMenuItem saveFile = new JMenuItem("Save");
 
         newFile.addActionListener(this);
         openFile.addActionListener(this);
+        openDirectory.addActionListener(this);
         saveFile.addActionListener(this);
 
         file.add(newFile);
         file.add(openFile);
+        file.add(openDirectory);
         file.add(saveFile);
-
-        add(scrollPane);
         scrollPane.setViewportView(textArea);
 
-        pack();
         setJMenuBar(menuBar);
 
         setVisible(true);
@@ -56,7 +57,7 @@ public class Editor extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         String s = actionEvent.getActionCommand();
-        if( s.equals("Open") ) {
+        if( s.equals("Open File") ) {
             JFileChooser fileChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
             int dialog = fileChooser.showOpenDialog(null);
             if (dialog == JFileChooser.APPROVE_OPTION) {
@@ -69,11 +70,23 @@ public class Editor extends JFrame implements ActionListener {
                     while ((fileDataLine = br.readLine()) != null) {
                         fileData = fileData + "\n" + fileDataLine;
                     }
-
                     textArea.setText(fileData);
                 } catch (Exception evt) {
                     JOptionPane.showMessageDialog(this, evt.getMessage());
                 }
+            }
+            else
+                JOptionPane.showMessageDialog(this, "the user cancelled the operation");
+        }
+        else if (s.equals( "Open Directory" )) {
+            JFileChooser directoryChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+            directoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int dialog = directoryChooser.showOpenDialog(null);
+            if( dialog == JFileChooser.APPROVE_OPTION) {
+                File file = directoryChooser.getSelectedFile();
+                project.displayFilesInDirectory(file);
+                revalidate();
+                repaint();
             }
             else
                 JOptionPane.showMessageDialog(this, "the user cancelled the operation");
