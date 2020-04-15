@@ -1,11 +1,11 @@
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import editor.*;
+import register.*;
 
 public class RegisterFrame extends JFrame {
     JLabel nameL = new JLabel("Full Name");
@@ -39,6 +39,22 @@ public class RegisterFrame extends JFrame {
         passwordRepeatP.add(passwordRepeatL);
         passwordRepeatP.add(passwordRepeatT);
 
+        registerB.addActionListener(new ActionListener() {
+          @Override
+          public void actionPerformed(ActionEvent actionEvent) {
+              String name = nameT.getText();
+              String username = userT.getText();
+              char[] password = passwordT.getPassword();
+              char[] passwordrepeat = passwordRepeatT.getPassword();
+              NewUser nu = new NewUser(name,username,password,passwordrepeat);
+              if(nu.registerUser()) {
+                dispose();
+                new Editor();
+              }
+              
+          }
+      });
+      
         add(nameP);
         add(userP);
         add(passwordP);
