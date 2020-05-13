@@ -1,3 +1,4 @@
 target/
 .idea
 CodeJet Studio.iml
+.metadata/
