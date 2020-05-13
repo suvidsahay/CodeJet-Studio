@@ -23,7 +23,7 @@ public class Editor extends JFrame implements ActionListener {
     private JScrollPane scrollPaneBro = new JScrollPane();
     private JScrollPane scrollPaneText = new JScrollPane();
     File currentFile;
-    File currentDirectory;
+    File currentDirectory = new File("$HOME");
 
     public Editor() {
         setLayout(new BorderLayout());
@@ -32,19 +32,26 @@ public class Editor extends JFrame implements ActionListener {
         setJMenuBar(menuBar);
 
         JMenu file = new JMenu("File");
+        JMenu run = new JMenu("Run");
         menuBar.add(file);
+        menuBar.add(run);
 
         JMenuItem openDirectory = new JMenuItem("Open Directory");
         JMenuItem saveFile = new JMenuItem("Save");
+        JMenuItem runProgram = new JMenuItem("Run");
+        JMenuItem buildProgram = new JMenuItem("Build");
 
         openDirectory.addActionListener(this);
         saveFile.addActionListener(this);
+        runProgram.addActionListener(this);
+        buildProgram.addActionListener(this);
 
         file.add(openDirectory);
         file.add(saveFile);
+        run.add(runProgram);
+        run.add(buildProgram);
 
         add(menuBar, BorderLayout.NORTH);
-
 
         scrollPaneBro.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPaneBro.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -76,9 +83,37 @@ public class Editor extends JFrame implements ActionListener {
         }
     }
 
+    void runCode() throws IOException, InterruptedException {
+//        System.out.println(currentFile.getName().substring(0, currentFile.getName().lastIndexOf('.')));
+//        System.out.println("gnome-terminal --command=\"bash -c \'cd " + currentDirectory.getPath() + " && g++ -o " + currentFile.getName().substring(0, currentFile.getName().lastIndexOf('.')) + " " + currentFile.getName() + " && " + "./main; $SHELL\'\"");
+        String[] cmd = {
+                "/bin/sh",
+                "-c",
+                "gnome-terminal --command=\"bash -c \'cd " + currentDirectory.getPath() + " && g++ -o " + currentFile.getName().substring(0, currentFile.getName().lastIndexOf('.')) + " " + currentFile.getName() + " && " + "./main; $SHELL\'\""
+        };
+        Process p = new ProcessBuilder(cmd).start();
+
+        StringBuilder output = new StringBuilder();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            output.append(line + "\n");
+        }
+
+        int exitVal = p.waitFor();
+        if (exitVal == 0) {
+            System.out.println("Success!");
+        } else {
+            System.out.println("Fail!");
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         String s = actionEvent.getActionCommand();
+        System.out.println(s);
         if( s.equals("Save") ) {
             String textData = "";
             textData = textArea.getText();
@@ -90,7 +125,6 @@ public class Editor extends JFrame implements ActionListener {
                 for(int i = 0; i < lines.length; i++) {
                     writer.append(lines[i]);
                     writer.append("\n");
-                    System.out.println(lines[i]);
                 }
                 writer.close();
             } catch (IOException e) {
@@ -107,6 +141,12 @@ public class Editor extends JFrame implements ActionListener {
             }
             else
                 JOptionPane.showMessageDialog(this, "the user cancelled the operation");
+        }else if(s.equals("Run")) {
+            try {
+                runCode();
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
