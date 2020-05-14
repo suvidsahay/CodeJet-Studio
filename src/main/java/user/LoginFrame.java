@@ -1,3 +1,5 @@
+package user;
+
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -11,8 +13,6 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import editor.Editor;
-import login.User;
-
 public class LoginFrame extends JFrame {
     JLabel userL = new JLabel("Username");
     JTextField userT = new JTextField(10);
@@ -25,7 +25,7 @@ public class LoginFrame extends JFrame {
     JPanel userP = new JPanel(new FlowLayout());
     JPanel passwordP = new JPanel( new FlowLayout());
 
-    LoginFrame() {
+    public LoginFrame() {
         super("CodeJet Studio");
 
         setLayout(new GridLayout(4,1));

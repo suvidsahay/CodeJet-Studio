@@ -1,3 +1,5 @@
+package user;
+
 import javax.swing.*;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -5,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import editor.*;
-import register.*;
 
 public class RegisterFrame extends JFrame {
     JLabel nameL = new JLabel("Full Name");
@@ -46,12 +47,12 @@ public class RegisterFrame extends JFrame {
               String username = userT.getText();
               char[] password = passwordT.getPassword();
               char[] passwordrepeat = passwordRepeatT.getPassword();
-              NewUser nu = new NewUser(name,username,password,passwordrepeat);
-              if(nu.registerUser()) {
+              User newUser = new User(username, password.toString());
+              newUser.register(name,username,password.toString());
+              if(newUser.registerUser()) {
                 dispose();
                 new Editor();
               }
-              
           }
       });
       
