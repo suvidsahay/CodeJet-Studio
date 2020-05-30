@@ -1,7 +1,8 @@
 package editor;
 
 import javax.swing.*;
-import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.filechooser.FileSystemView;
@@ -9,21 +10,28 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.*;
-import java.awt.Container;
 import java.io.*;
-import java.time.Clock;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Editor extends JFrame implements ActionListener {
-
-    public static JTextArea textArea = new JTextArea();
+    public static List<JTextPane> textArea = new ArrayList<JTextPane>();
     private JPanel browser = new JPanel();
     private JTree directory;
     private JScrollPane scrollPaneBro = new JScrollPane();
     private JScrollPane scrollPaneText = new JScrollPane();
-    File currentFile;
+    private JTabbedPane tabbedPane = new JTabbedPane();
+    File currentFile = null;
     File currentDirectory = new File("$HOME");
+    CaretListenerLabel caretListenerLabel = new CaretListenerLabel();
+    public static int textAreaIndex = -1;
+    public static int currentTextArea;
+    Font font = new Font("Bitstream Regular", Font.TRUETYPE_FONT, 20);
+    final JPopupMenu popupmenu = new JPopupMenu("File");
+    JMenuItem newFile = new JMenuItem("New File");
+    JMenuItem newDirectory = new JMenuItem("New Directory");
 
     public Editor() {
         setLayout(new BorderLayout());
@@ -60,7 +68,15 @@ public class Editor extends JFrame implements ActionListener {
         add(scrollPaneBro, BorderLayout.WEST);
         add(scrollPaneText, BorderLayout.CENTER);
         scrollPaneBro.setViewportView(browser);
-        scrollPaneText.setViewportView(textArea);
+        scrollPaneText.setViewportView(tabbedPane);
+
+        tabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent changeEvent) {
+                currentTextArea = tabbedPane.getSelectedIndex();
+            }
+        });
+        
 
         setVisible(true);
         setSize(1920,1080);
@@ -68,6 +84,7 @@ public class Editor extends JFrame implements ActionListener {
     }
 
     void openFile(File file) {
+
         try {
             String fileDataLine = "", fileData = "";
             FileReader fr = new FileReader(file);
@@ -76,7 +93,7 @@ public class Editor extends JFrame implements ActionListener {
             while ((fileDataLine = br.readLine()) != null) {
                 fileData = fileData + "\n" + fileDataLine;
             }
-            textArea.setText(fileData);
+            textArea.get(textAreaIndex).setText(fileData);
 
         } catch (Exception evt) {
             JOptionPane.showMessageDialog(this, evt.getMessage());
@@ -116,7 +133,7 @@ public class Editor extends JFrame implements ActionListener {
         System.out.println(s);
         if( s.equals("Save") ) {
             String textData = "";
-            textData = textArea.getText();
+            textData = textArea.get(currentTextArea).getText();
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter(currentFile));
                 BufferedReader reader = new BufferedReader(new StringReader(textData));
@@ -150,6 +167,15 @@ public class Editor extends JFrame implements ActionListener {
         }
     }
 
+    void addNewTab() {
+        textArea.add(new JTextPane());
+        textAreaIndex ++;
+        textArea.get(textAreaIndex).setFont(font);
+//        textArea.get(textAreaIndex).addCaretListener(caretListenerLabel);
+        tabbedPane.add(textArea.get(textAreaIndex), textAreaIndex);
+        JButton cross = new JButton("x");
+    }
+
     void displayFilesInDirectory(File file){
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(file.getName());
@@ -160,13 +186,18 @@ public class Editor extends JFrame implements ActionListener {
         directory.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
         directory.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+
         directory.addTreeSelectionListener(new TreeSelectionListener() {
             @Override
             public void valueChanged(TreeSelectionEvent treeSelectionEvent) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) treeSelectionEvent.getPath().getLastPathComponent();
-                openFile((File)node.getUserObject());
-                currentFile = (File)node.getUserObject();
-                currentDirectory = (File)((File) node.getUserObject()).getParentFile();
+                File selectedFile;
+                selectedFile = (File)node.getUserObject();
+                addNewTab();
+                tabbedPane.setTitleAt(textAreaIndex, selectedFile.getName());
+                openFile(selectedFile);
+                currentFile = selectedFile;
+                currentDirectory = (File)selectedFile.getParentFile();
             }
         });
         
